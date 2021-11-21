@@ -46,6 +46,13 @@ namespace Sfeclis_Valentin_Lab5
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            System.Windows.Data.CollectionViewSource customerViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("customerViewSource")));
+            // Load data by setting the CollectionViewSource.Source property:
+            // customerViewSource.Source = [generic data source]
+            System.Windows.Data.CollectionViewSource inventoryViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("inventoryViewSource")));
+            // Load data by setting the CollectionViewSource.Source property:
+            // inventoryViewSource.Source = [generic data source]
+            customerVSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("customerViewSource")));
             customerVSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("customerViewSource")));
             customerVSource.Source = ctx.Customers.Local;
             ctx.Customers.Load();
@@ -53,9 +60,9 @@ namespace Sfeclis_Valentin_Lab5
             inventoryVSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("inventoryViewSource")));
             inventoryVSource.Source = ctx.Inventories.Local;
             ctx.Inventories.Load();
-
+            customerVSource.View.MoveCurrentToFirst();
             customerOrdersVSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("customerOrdersViewSource")));
-
+            
             //customerOrdersVSource.Source = ctx.Orders.Local;
             ctx.Orders.Load();
             ctx.Inventories.Load();
@@ -73,10 +80,16 @@ namespace Sfeclis_Valentin_Lab5
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
             action = ActionState.New;
+            BindingOperations.ClearBinding(firstNameTextBox, TextBox.TextProperty);
+            BindingOperations.ClearBinding(lastNameTextBox, TextBox.TextProperty);
+            SetValidationBinding();
         }
-        private void btnEditO_Click(object sender, RoutedEventArgs e)
+        private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
             action = ActionState.Edit;
+            BindingOperations.ClearBinding(firstNameTextBox, TextBox.TextProperty);
+            BindingOperations.ClearBinding(lastNameTextBox, TextBox.TextProperty);
+            SetValidationBinding();
         }
         private void btnDeleteO_Click(object sender, RoutedEventArgs e)
         {
@@ -89,6 +102,7 @@ namespace Sfeclis_Valentin_Lab5
         private void btnPrevious_Click(object sender, RoutedEventArgs e)
         {
             customerVSource.View.MoveCurrentToPrevious();
+            inventoryVSource.View.MoveCurrentToPrevious();
         }
 
         private void Window_Loaded_1(object sender, RoutedEventArgs e)
@@ -368,6 +382,36 @@ namespace Sfeclis_Valentin_Lab5
                 }
             }
         }
+
+        private void SetValidationBinding()
+        {
+            Binding firstNameValidationBinding = new Binding();
+            firstNameValidationBinding.Source = customerVSource;
+            firstNameValidationBinding.Path = new PropertyPath("FirstName");
+            firstNameValidationBinding.NotifyOnValidationError = true;
+            firstNameValidationBinding.Mode = BindingMode.TwoWay;
+            firstNameValidationBinding.UpdateSourceTrigger =
+           UpdateSourceTrigger.PropertyChanged;
+            //string required
+            firstNameValidationBinding.ValidationRules.Add(new StringNotEmpty());
+            firstNameTextBox.SetBinding(TextBox.TextProperty,
+           firstNameValidationBinding);
+            Binding lastNameValidationBinding = new Binding();
+            lastNameValidationBinding.Source = customerVSource;
+            lastNameValidationBinding.Path = new PropertyPath("LastName");
+            lastNameValidationBinding.NotifyOnValidationError = true;
+            lastNameValidationBinding.Mode = BindingMode.TwoWay;
+            lastNameValidationBinding.UpdateSourceTrigger =
+           UpdateSourceTrigger.PropertyChanged;
+            //string min length validator
+            lastNameValidationBinding.ValidationRules.Add(new
+           StringMinLengthValidator());
+            lastNameTextBox.SetBinding(TextBox.TextProperty,
+           lastNameValidationBinding); //setare binding nou
+        }
+        
+        //nu stiu daca asta trebuie pusa aici
+        
     }
 }
 
